@@ -24,10 +24,18 @@ public:
     info->addResponse<String>(Status::CODE_200, "text/plain");
   }
 
+  // 1. This handles normal web browsers (GET)
   ENDPOINT("GET", "/", root) {
-    auto response = createResponse(Status::CODE_200, "Torn RW Feed Server is Online!");
-    response->putHeader("Content-Type", "text/plain");
-    return response;
+      auto response = createResponse(Status::CODE_200, "Torn RW Feed Server is Online!");
+      response->putHeader("Content-Type", "text/plain");
+      return response;
+  }
+
+  // 2. ADD THIS: This handles UptimeRobot's free tier (HEAD)
+  ENDPOINT("HEAD", "/", root_head) {
+      auto response = createResponse(Status::CODE_200, ""); // HEAD requests must have an empty body
+      response->putHeader("Content-Type", "text/plain");
+      return response;
   }
 };
 
