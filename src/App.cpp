@@ -25,11 +25,14 @@ void run() {
   router->addController(authController);
   router->addController(warController);
   router->addController(userController);
+  auto apiController = ApiController::createShared();
+  router->addController(apiController);
 
   oatpp::web::server::api::Endpoints docEndpoints;
   docEndpoints.append(authController->getEndpoints());
   docEndpoints.append(warController->getEndpoints());
   docEndpoints.append(userController->getEndpoints());
+  docEndpoints.append(apiController->getEndpoints());
 
   router->addController(
       oatpp::swagger::AsyncController::createShared(docEndpoints));
@@ -48,7 +51,7 @@ void run() {
 
   /* Print info about server port */
   OATPP_LOGI("MyApp", "Server running on port %s",
-             connectionProvider->getProperty("port").getData())
+           (const char*)connectionProvider->getProperty("port").getData())
 
   /* Run server */
   server.run();

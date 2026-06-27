@@ -4,8 +4,6 @@
 #include "DatabaseComponent.hpp"
 #include "SwaggerComponent.hpp"
 #include "clients/ClientComponent.hpp"
-#include "oatpp-openssl/Config.hpp"
-#include "oatpp-openssl/server/ConnectionProvider.hpp"
 #include "oatpp-websocket/ConnectionHandler.hpp"
 #include "oatpp/core/macro/component.hpp"
 #include "oatpp/network/tcp/server/ConnectionProvider.hpp"
@@ -48,11 +46,9 @@ class AppComponent {
       std::shared_ptr<oatpp::network::ServerConnectionProvider>,
       serverConnectionProvider)
   ([] {
-    OATPP_COMPONENT(std::shared_ptr<AppConfig>, appConfig);
-    auto config = oatpp::openssl::Config::createDefaultServerConfigShared(
-        appConfig->certPath, appConfig->keyPath);
-    return oatpp::openssl::server::ConnectionProvider::createShared(
-        config, {"0.0.0.0", 8000, oatpp::network::Address::IP_4});
+    // Render handles SSL termination; we just need a raw TCP provider here
+    return oatpp::network::tcp::server::ConnectionProvider::createShared(
+        {"0.0.0.0", 8000, oatpp::network::Address::IP_4});
   }());
 
   /**

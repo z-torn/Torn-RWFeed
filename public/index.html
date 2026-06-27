@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Torn RW Feed</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            zinc: {
+              950: '#09090b',
+              900: '#18181b',
+              800: '#252526',
+              700: '#333333',
+              600: '#525252',
+              50: '#fafafa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .hidden-view { display: none !important; }
+  </style>
+</head>
+<body class="h-full bg-zinc-950 text-zinc-50">
+  <div id="app" class="min-h-screen flex flex-col">
+    <!-- Login View -->
+    <div id="login-view" class="flex-1 flex items-center justify-center p-4">
+      <div class="w-full max-w-md space-y-6">
+        <div class="text-center space-y-2">
+          <h1 class="text-3xl font-bold">Torn RW Feed</h1>
+          <p class="text-zinc-400">Dominate Ranked Wars with real-time intelligence</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 text-center text-sm">
+          <div class="bg-zinc-900/50 border border-zinc-800 rounded-lg p-3">
+            <div class="text-lg mb-1">⚡</div>
+            <div class="text-zinc-300 font-medium">Real-time updates</div>
+          </div>
+          <div class="bg-zinc-900/50 border border-zinc-800 rounded-lg p-3">
+            <div class="text-lg mb-1">📊</div>
+            <div class="text-zinc-300 font-medium">Stats integration</div>
+          </div>
+          <div class="bg-zinc-900/50 border border-zinc-800 rounded-lg p-3">
+            <div class="text-lg mb-1">📱</div>
+            <div class="text-zinc-300 font-medium">Mobile support</div>
+          </div>
+          <div class="bg-zinc-900/50 border border-zinc-800 rounded-lg p-3">
+            <div class="text-lg mb-1">🔒</div>
+            <div class="text-zinc-300 font-medium">Efficient API usage</div>
+          </div>
+        </div>
+
+        <form id="login-form" class="bg-zinc-900/50 border border-zinc-800 rounded-lg p-6 space-y-4">
+          <div>
+            <label for="api-key" class="block text-sm font-medium mb-2">Torn API Key</label>
+            <input 
+              type="password" 
+              id="api-key" 
+              name="api-key"
+              placeholder="Enter your Public/Limited API key"
+              class="w-full bg-zinc-800 border border-zinc-700 rounded-md px-3 py-2 text-zinc-50 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <button 
+            type="submit" 
+            id="connect-btn"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+          >
+            Connect
+          </button>
+          <div id="login-error" class="hidden text-red-400 text-sm text-center"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Dashboard View -->
+    <div id="dashboard-view" class="hidden-view flex-1 flex flex-col">
+      <!-- Header -->
+      <header class="bg-zinc-900/50 border-b border-zinc-800 px-4 py-3 flex items-center justify-between">
+        <div>
+          <h1 id="faction-name" class="text-xl font-bold">Loading...</h1>
+          <div id="war-status" class="text-sm text-zinc-400">Checking war status...</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="refresh-btn" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1 rounded-md text-sm transition-colors">
+            Refresh
+          </button>
+          <button id="logout-btn" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1 rounded-md text-sm transition-colors">
+            Disconnect
+          </button>
+        </div>
+      </header>
+
+      <!-- Navigation -->
+      <nav class="bg-zinc-900/30 border-b border-zinc-800 px-4">
+        <div class="flex gap-1">
+          <button data-tab="targets" class="tab-btn active bg-zinc-800 text-zinc-50 px-4 py-2 text-sm font-medium rounded-t-md">🎯 Targets</button>
+          <button data-tab="members" class="tab-btn bg-zinc-900/50 text-zinc-400 hover:text-zinc-50 px-4 py-2 text-sm font-medium rounded-t-md">🛡️ Members</button>
+          <button data-tab="stats" class="tab-btn bg-zinc-900/50 text-zinc-400 hover:text-zinc-50 px-4 py-2 text-sm font-medium rounded-t-md">📊 Stats</button>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="flex-1 p-4 overflow-y-auto">
+        <!-- Targets Tab -->
+        <div id="targets-tab" class="tab-content space-y-4">
+          <div id="war-progress" class="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4">
+            <h3 class="font-medium mb-2">War Progress</h3>
+            <div class="text-zinc-400">Loading...</div>
+          </div>
+          <div id="targets-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="text-zinc-400 text-center py-8 col-span-full">Loading targets...</div>
+          </div>
+        </div>
+
+        <!-- Members Tab -->
+        <div id="members-tab" class="tab-content hidden-view">
+          <div id="members-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="text-zinc-400 text-center py-8 col-span-full">Loading members...</div>
+          </div>
+        </div>
+
+        <!-- Stats Tab -->
+        <div id="stats-tab" class="tab-content hidden-view">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4">
+              <h3 class="font-medium mb-2">Statistics</h3>
+              <div class="space-y-3">
+                <div class="text-zinc-400">Stats integration coming soon...</div>
+              </div>
+            </div>
+            <div class="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4">
+              <h3 class="font-medium mb-2">Battle Estimates</h3>
+              <div class="space-y-3">
+                <div class="text-zinc-400">FFScouter/TornStats data cached by backend</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Error Banner -->
+      <div id="error-banner" class="hidden fixed bottom-4 left-4 right-4 bg-red-900/90 border border-red-700 rounded-lg p-3 text-sm text-center max-w-2xl mx-auto">
+        <span id="error-message"></span>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
