@@ -7,6 +7,7 @@
 #include "controller/AuthController.hpp"
 #include "controller/UserController.hpp"
 #include "controller/WarController.hpp"
+#include "controller/ApiController.hpp"
 #include "oatpp-swagger/AsyncController.hpp"
 #include "oatpp/network/Server.hpp"
 
