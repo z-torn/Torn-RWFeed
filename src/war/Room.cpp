@@ -178,7 +178,10 @@ void Room::sendCurrentState(const std::shared_ptr<Peer>& peer) {
     }
     rsp->parseMemberLocation();
   }
-  rsp->addTargets(loadTargetsForUser(peer->getUserId()));
+  auto targets = loadTargetsForUser(peer->getUserId());
+  if (targets && targets->size() > 0) {
+    rsp->addTargets(targets);
+  }
   oatpp::String currentStateJson = objectMapper->writeToString(rsp);
   peer->sendMessage(currentStateJson);
 }

@@ -116,9 +116,16 @@ function handleWebSocketMessage(data) {
   try {
     if (data === 'pong') return;
     const msg = JSON.parse(data);
-    if (msg.war) updateWarStatus(msg.war);
-    if (msg.members) renderMembers(msg.members);
-    if (msg.targets) renderTargets(msg.targets);
+    if (msg.war && msg.war.ranked) updateWarStatus(msg.war);
+    if (msg.members && msg.members.length > 0) {
+      state.enemies = msg.members;
+      if (state.currentTab === 'targets') {
+        renderTargets(msg.members);
+      }
+    }
+    if (msg.user && state.currentTab === 'members') {
+      renderMembers([msg.user]);
+    }
     if (msg.error) showError(msg.error);
   } catch (e) { console.error('Parse error', e); }
 }
@@ -161,20 +168,29 @@ function updateWarStatus(war) {
   statusEl.textContent = `${w.factions[0].name} vs ${w.factions[1].name} | ${w.factions[0].score} - ${w.factions[1].score}`;
 }
 
-function renderTargets(targets) {
+function renderTargets(members) {
   const grid = document.getElementById('targets-grid');
-  grid.innerHTML = targets.map(m => `
+  if (!members || members.length === 0) {
+    grid.innerHTML = '<div class="text-zinc-400 text-center py-8">No enemies available</div>';
+    return;
+  }
+  grid.innerHTML = members.map(m => `
     <div class="bg-zinc-900/50 p-4 rounded-lg">
       <div class="font-medium">${m.name}</div>
       <div class="text-xs text-zinc-400">${m.status?.state || 'Unknown'}</div>
     </div>`).join('');
-}
+ }
 
 function renderMembers(members) {
   const grid = document.getElementById('members-grid');
+  if (!members || members.length === 0) {
+    grid.innerHTML = '<div class="text-zinc-400 text-center py-8">No ally data available</div>';
+    return;
+  }
   grid.innerHTML = members.map(m => `
     <div class="bg-zinc-900/50 p-4 rounded-lg">
       <div class="font-medium">${m.name}</div>
+      <div class="text-xs text-zinc-400">${m.status?.state || 'Unknown'}</div>
     </div>`).join('');
 }
 
