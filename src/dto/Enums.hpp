@@ -32,4 +32,8 @@ ENUM(TornKeyAccessType, v_int32, VALUE(CUSTOM, 0, "Custom"),
 
 ENUM(ErrorMessage, v_int32, VALUE(KeyLimit, 0, "KeyLimit"))
 
+ENUM(WSMessageType, v_int32, VALUE(GET_STATUS, 0, "get_status"),
+                          VALUE(PING, 1, "ping"),
+                          VALUE(TARGET_UPDATE, 2, "target_update"))
+
 #include OATPP_CODEGEN_END(DTO)

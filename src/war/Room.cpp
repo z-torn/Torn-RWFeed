@@ -1,6 +1,7 @@
 #include "Room.hpp"
 
 #include "dto/responses/WarStateResponseDto.hpp"
+#include "dto/TargetsDto.hpp"
 #include "util/DtoUtils.hpp"
 
 void Room::saveTargets() {
@@ -12,6 +13,26 @@ void Room::saveTargets() {
 }
 
 void Room::updateTarget(std::int64_t userId, const std::string& updateString) {
+  oatpp::Object<WSMessageDto> wsMsg;
+  try {
+    wsMsg = objectMapper->readFromString<oatpp::Object<WSMessageDto>>(
+        updateString);
+    if (wsMsg && wsMsg->type) {
+      if (wsMsg->type == WSMessageType::GET_STATUS ||
+          wsMsg->type == WSMessageType::PING) {
+        auto peerIt = m_peersByUserId.find(userId);
+        if (peerIt != m_peersByUserId.end()) {
+          for (const auto& p : peerIt->second) {
+            sendCurrentState(p.second);
+          }
+        }
+        return;
+      }
+    }
+  } catch (oatpp::parser::ParsingError& e) {
+    OATPP_LOGD(TAG, "WS message parse error: %s", e.what());
+  }
+
   oatpp::Object<UpdateTargetDto> target;
   try {
     target = objectMapper->readFromString<oatpp::Object<UpdateTargetDto>>(
@@ -64,10 +85,12 @@ bool Room::isClosed() const { return m_closed.load(std::memory_order_acquire); }
 std::int64_t Room::factionId() const { return m_factionId; }
 
 std::optional<std::int64_t> Room::getWarId() {
+  if (!m_factionWar) return std::nullopt;
   return m_factionWar->getWarId();
 }
 
 std::optional<std::int64_t> Room::getEnemyFactionId() {
+  if (!m_factionWar) return std::nullopt;
   return m_factionWar->getEnemyFactionId(m_factionId);
 }
 
@@ -134,17 +157,29 @@ void Room::sendMessage(const oatpp::String& message, std::int64_t userId) {
 }
 
 void Room::sendCurrentState(const std::shared_ptr<Peer>& peer) {
-  if (m_enemiesState.empty()) {
-    return;
+  auto rsp = WarStateResponseDto::createShared();
+  if (m_factionWar) {
+    rsp->addWar(m_factionWar);
   }
-
-  auto rsp = WarStateResponseDto::fromMembersInfo(m_enemiesState);
-  rsp->addMemberStats(m_memberStats);
-  rsp->addWar(m_factionWar);
-  rsp->addUser(m_alliesState[peer->getUserId()]);
+  auto userIt = m_alliesState.find(peer->getUserId());
+  if (userIt != m_alliesState.end()) {
+    rsp->addUser(userIt->second);
+    if (rsp->user) {
+      rsp->user->status->parseLocation();
+    }
+  }
+  if (!m_enemiesState.empty()) {
+    rsp->addMemberStats(m_memberStats);
+    rsp->members =
+        oatpp::Vector<oatpp::Object<TornFactionMember>>::createShared();
+    rsp->members->reserve(m_enemiesState.size());
+    for (const auto& statePair : m_enemiesState) {
+      rsp->members->emplace_back(statePair.second);
+    }
+    rsp->parseMemberLocation();
+  }
   rsp->addTargets(loadTargetsForUser(peer->getUserId()));
   oatpp::String currentStateJson = objectMapper->writeToString(rsp);
-
   peer->sendMessage(currentStateJson);
 }
 

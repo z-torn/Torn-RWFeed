@@ -9,6 +9,12 @@
 
 #include OATPP_CODEGEN_BEGIN(DTO)
 
+class WSMessageDto : public oatpp::DTO {
+  DTO_INIT(WSMessageDto, DTO)
+
+  DTO_FIELD(Enum<WSMessageType>::AsString, type, "type");
+};
+
 class TargetsDbDto : public oatpp::DTO {
   DTO_INIT(TargetsDbDto, DTO)
 
